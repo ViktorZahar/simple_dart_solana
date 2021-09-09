@@ -1,0 +1,25 @@
+{
+  "name": "simple_ts_solana",
+  "version": "1.0.0",
+  "description": "ts utils for simple_dart_solana projct",
+  "main": "dist/simple_ts_solana.js",
+  "types": "dist/simple_ts_solana.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "dependencies": {
+    "@solana/web3.js": "^1.25.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^8.1.0",
+    "typescript": "^3.9.7",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12"
+  },
+  "scripts": {
+    "build": "webpack --display-modules && cp dist/simple_ts_solana.js ../web",
+    "prod": "webpack -p && cp dist/simple_ts_solana.js ../web",
+    "clean": "tsc --build --clean"
+  },
+  "author": "Viktor Zakharov"
+}

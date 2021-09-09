@@ -1,0 +1,14 @@
+.DS_Store
+.pub/*
+.dart_tool/*
+.idea/*
+packages/*
+build/*
+web/packages/*
+web/simple_ts_solana.js
+.packages
+*.lock
+
+simple_ts_solana/dist/*
+simple_ts_solana/node_modules/*
+/simple_ts_solana/package-lock.json

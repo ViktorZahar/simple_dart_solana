@@ -1,0 +1,25 @@
+name: simple_dart_solana
+description: simple_dart_solana
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: '^2.13.4'
+
+#dependencies:
+
+dev_dependencies:
+  build_runner: ^2.0.5
+  build_web_compilers:
+  test:
+
+
+web:
+  compiler:
+    debug: dartdevc
+
+build_web_compilers|entrypoint:
+  options:
+    compiler: dart2js
+    dart2js_args:
+      - --no-sound-null-safety
