@@ -44,6 +44,8 @@ class SolanaWrapperRaw {
   external dynamic getAllTokenAccountsByOwner(String address);
 
   external dynamic getAccountOwner(String address);
+
+  external dynamic getStaked(String address);
 }
 
 class SolanaWrapper {
@@ -77,9 +79,16 @@ class SolanaWrapper {
     return ret;
   }
 
-  Future<String> getAccountOwner(String address) async {
-    final resObj =
-        await promiseToFuture(_solanaWrapperRaw.getAccountOwner(address));
-    return resObj;
+  Future<String> getAccountOwner(String address) async =>
+      promiseToFuture(_solanaWrapperRaw.getAccountOwner(address));
+
+  Future<Map<String, double>> getStaked(String address) async {
+    final resObj = await promiseToFuture(_solanaWrapperRaw.getStaked(address));
+    final resMap = jsObjectToMap(resObj);
+    final ret = <String, double>{};
+    resMap.forEach((key, value) {
+      ret[key] = value;
+    });
+    return ret;
   }
 }

@@ -30,5 +30,12 @@ Future<void> main() async {
         .getAccountOwner('C3Arh8v7XxwZnwWukUcs51hNqyf4nSJGkjvL8h4M6khT');
     body.children
         .add(DivElement()..text = 'getAccountOwner() empty => $emptyOwner');
+
+    final staked = await solanaWrapper
+        .getStaked('4SyWon3CXL6oYrpXdY5XZfyK84ZYYG6ZDWkDeu32YVoP');
+    final mappedStaked = staked.entries
+        .map((ent) => '${ent.key}=${ent.value.toStringAsFixed(5)}');
+    body.children
+        .add(DivElement()..text = 'getStaked() => $mappedStaked');
   }
 }

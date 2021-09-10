@@ -25,7 +25,7 @@ export class SolanaWrapper {
         return resMapped
     }
 
-    async getAccountOwner(address: string): Promise<any> {
+    async getAccountOwner(address: string): Promise<string> {
         const resp = await this.conn.getParsedAccountInfo(new solWeb3.PublicKey(address))
         const data = <solWeb3.ParsedAccountData>resp.value.data
         if ('parsed' in data) {
@@ -33,6 +33,24 @@ export class SolanaWrapper {
         } else {
             return ''
         }
+    }
+
+    async getStaked(address: string): Promise<any> {
+        var ret = {};
+        const stakeAccounts = await this.conn.getParsedProgramAccounts(
+            new solWeb3.PublicKey('Stake11111111111111111111111111111111111111'),
+            {
+                filters: [
+                    { memcmp: { offset: 12, bytes: address } }]
+            })
+        for (var i = 0; i < stakeAccounts.length; i++) {
+            const stakeAccount = stakeAccounts[i]
+            const resp = await this.conn.getStakeActivation(stakeAccount.pubkey)
+            ret[stakeAccount.pubkey.toString()] = resp.active
+        }
+
+        return ret
+
     }
 }
 
