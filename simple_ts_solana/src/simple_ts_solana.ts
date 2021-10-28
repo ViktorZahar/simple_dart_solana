@@ -27,6 +27,9 @@ export class SolanaWrapper {
 
     async getAccountOwner(address: string): Promise<string> {
         const resp = await this.conn.getParsedAccountInfo(new solWeb3.PublicKey(address))
+        if (resp.value == null) {
+            return ''
+        }
         const data = <solWeb3.ParsedAccountData>resp.value.data
         if ('parsed' in data) {
             return new solWeb3.PublicKey(data.parsed.info.owner).toString()
