@@ -8,7 +8,8 @@
     "/dist"
   ],
   "dependencies": {
-    "@solana/web3.js": "^1.30.2"
+    "@solana/web3.js": "^1.30.2",
+    "bn.js": "^5.0.0"
   },
   "devDependencies": {
     "ts-loader": "^8.1.0",

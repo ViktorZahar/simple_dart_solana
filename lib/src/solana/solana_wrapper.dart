@@ -253,7 +253,7 @@ class SolanaWrapper {
           try {
             await promiseToFuture(getMultipleAccountsInfoRaw([address]));
           } catch (e) {
-            print('bad address address');
+            print('bad address $address');
             rethrow;
           }
         }
