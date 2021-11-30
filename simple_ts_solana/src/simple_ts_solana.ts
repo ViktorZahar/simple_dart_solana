@@ -1,5 +1,5 @@
 import * as solWeb3 from '@solana/web3.js';
-import BN from 'bn.js';
+import BigNumberRaw from './bigraw.js';
 
 class AccountInfo {
     executable: boolean;
@@ -123,8 +123,8 @@ const findUserFarmAddress = async (
 ) => {
     let seeds = [
         new solWeb3.PublicKey(authority).toBuffer(),
-        new BN(index).toArrayLike(Buffer, "le", 8),
-        new BN(farm).toArrayLike(Buffer, "le", 8),
+        new BigNumberRaw(index).toArrayLike(Buffer, "le", 8),
+        new BigNumberRaw(farm).toArrayLike(Buffer, "le", 8),
     ];
 
     let k = await solWeb3.PublicKey.findProgramAddress(seeds, new solWeb3.PublicKey(programId));
@@ -148,7 +148,7 @@ const findUserFarmObligationAddress = async (
     let seeds = [
         new solWeb3.PublicKey(authority).toBuffer(),
         userFarmAddr.toBuffer(),
-        new BN(obligationIndex).toArrayLike(Buffer, "le", 8),
+        new BigNumberRaw(obligationIndex).toArrayLike(Buffer, "le", 8),
     ];
 
     return solWeb3.PublicKey.findProgramAddress(seeds, new solWeb3.PublicKey(programId));
@@ -156,3 +156,47 @@ const findUserFarmObligationAddress = async (
 
 window['SolanaWrapper'] = SolanaWrapper
 window['publicKeyFromArray'] = publicKeyFromArray
+
+
+const toArrayLike = function toArrayLike ( val:number, endian, length) {
+
+    var byteLength = this.byteLength();
+    var reqLength = length || Math.max(1, byteLength);
+
+    var res = new Buffer(reqLength);
+    var position = 0;
+    var carry = 0;
+
+    for (var i = 0, shift = 0; i < this.length; i++) {
+      var word = (this.words[i] << shift) | carry;
+
+      res[position++] = word & 0xff;
+      if (position < res.length) {
+        res[position++] = (word >> 8) & 0xff;
+      }
+      if (position < res.length) {
+        res[position++] = (word >> 16) & 0xff;
+      }
+
+      if (shift === 6) {
+        if (position < res.length) {
+          res[position++] = (word >> 24) & 0xff;
+        }
+        carry = 0;
+        shift = 0;
+      } else {
+        carry = word >>> 24;
+        shift += 2;
+      }
+    }
+
+    if (position < res.length) {
+      res[position++] = carry;
+
+      while (position < res.length) {
+        res[position++] = 0;
+      }
+    }
+    return res;
+  };
+
