@@ -6,6 +6,26 @@ Future<void> main() async {
   final body = querySelector('body');
   final solanaWrapper = SolanaWrapper.mainNet();
   if (body != null) {
+    var solAddress = await solanaWrapper.findFarmsolObligationAddress(
+        '7fSNtTYLtxLAnG2vzK7MX8ndcizjBieRaLDj5NLbhnLH',
+        'Bt2WPMmbwHPk36i4CRucNDyLcmoGdC7xEdrVuxgJaNE6',0,0,0);
+    body.children.add(DivElement()..text = 'soladdress1 => $solAddress');
+
+    solAddress = await solanaWrapper.findFarmsolObligationAddress(
+        '7fSNtTYLtxLAnG2vzK7MX8ndcizjBieRaLDj5NLbhnLH',
+        'Bt2WPMmbwHPk36i4CRucNDyLcmoGdC7xEdrVuxgJaNE6',1,0,0);
+    body.children.add(DivElement()..text = 'soladdress2 => $solAddress');
+
+    solAddress = await solanaWrapper.findFarmsolObligationAddress(
+        '7fSNtTYLtxLAnG2vzK7MX8ndcizjBieRaLDj5NLbhnLH',
+        'Bt2WPMmbwHPk36i4CRucNDyLcmoGdC7xEdrVuxgJaNE6',0,1,0);
+    body.children.add(DivElement()..text = 'soladdress3 => $solAddress');
+
+    solAddress = await solanaWrapper.findFarmsolObligationAddress(
+        '7fSNtTYLtxLAnG2vzK7MX8ndcizjBieRaLDj5NLbhnLH',
+        'Bt2WPMmbwHPk36i4CRucNDyLcmoGdC7xEdrVuxgJaNE6',0,0,1);
+    body.children.add(DivElement()..text = 'soladdress4 => $solAddress');
+
     final balanceResult = await solanaWrapper
         .getBalance('FV6ik6NgbspFDEkmKT57Ra3QMBkq8aX1LcTnbK8jcYcQ');
     body.children.add(DivElement()..text = 'getBalance() => $balanceResult');
@@ -31,11 +51,12 @@ Future<void> main() async {
     body.children
         .add(DivElement()..text = 'getAccountOwner() empty => $emptyOwner');
 
-    final staked = await solanaWrapper
-        .getStaked('4SyWon3CXL6oYrpXdY5XZfyK84ZYYG6ZDWkDeu32YVoP');
+    final staked = await solanaWrapper.getStaked(
+        '4SyWon3CXL6oYrpXdY5XZfyK84ZYYG6ZDWkDeu32YVoP',
+        'Stake11111111111111111111111111111111111111');
     final mappedStaked = staked.entries
         .map((ent) => '${ent.key}=${ent.value.toStringAsFixed(5)}');
-    body.children
-        .add(DivElement()..text = 'getStaked() => $mappedStaked');
+    body.children.add(DivElement()..text = 'getStaked() => $mappedStaked');
+
   }
 }
