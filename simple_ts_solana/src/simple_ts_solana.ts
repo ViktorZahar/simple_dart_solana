@@ -1,13 +1,12 @@
 import * as solWeb3 from '@solana/web3.js';
-import BN from 'bn.js';
 
 class AccountInfo {
-    executable: boolean;
-    owner: string;
-    lamports: number;
-    data: string;
-    rentEpoch?: number;
-    address: string;
+    executable: boolean = false;
+    owner: string = '';
+    lamports: number = 0;
+    data: string = '';
+    rentEpoch?: number = 0;
+    address: string = '';
 }
 
 export class SolanaWrapper {
@@ -77,7 +76,7 @@ export class SolanaWrapper {
     }
 
     async getMultipleAccountsInfo(addresses: string[]): Promise<any> {
-        var ret: AccountInfo[] = [];
+        var ret: string[] = [];
         var keys = [];
         for (var i in addresses) {
             const key = new solWeb3.PublicKey(addresses[i])
@@ -86,7 +85,7 @@ export class SolanaWrapper {
         const multiInfoRes = await this.conn.getMultipleAccountsInfo(keys, 'confirmed')
         for (var i in multiInfoRes) {
             if (multiInfoRes[i] == null) {
-                ret.push(null)
+                ret.push('-')
             } else {
                 const { data, executable, lamports, owner, rentEpoch } = multiInfoRes[i]
                 const accountInfo = new AccountInfo()
@@ -95,7 +94,7 @@ export class SolanaWrapper {
                 accountInfo.lamports = lamports
                 accountInfo.owner = owner.toString()
                 accountInfo.rentEpoch = rentEpoch
-                ret.push(accountInfo)
+                ret.push(JSON.stringify(accountInfo))
             }
         }
         return ret
@@ -115,16 +114,16 @@ function publicKeyFromArray(arr: Array<number>): string {
 }
 
 
-const findUserFarmAddress = async (
+async function findUserFarmAddress(
     authority: string,
     programId: string,
     index: number, // hardcoded to 0 for now
     farm: number,//check FARMS IDs
-) => {
+): Promise<any> {
     let seeds = [
         new solWeb3.PublicKey(authority).toBuffer(),
-        new BN(index).toArrayLike(Buffer, "le", 8),
-        new BN(farm).toArrayLike(Buffer, "le", 8),
+        convertToArrayLike(index),
+        convertToArrayLike(farm)
     ];
 
     let k = await solWeb3.PublicKey.findProgramAddress(seeds, new solWeb3.PublicKey(programId));
@@ -148,7 +147,7 @@ const findUserFarmObligationAddress = async (
     let seeds = [
         new solWeb3.PublicKey(authority).toBuffer(),
         userFarmAddr.toBuffer(),
-        new BN(obligationIndex).toArrayLike(Buffer, "le", 8),
+        convertToArrayLike(obligationIndex)
     ];
 
     return solWeb3.PublicKey.findProgramAddress(seeds, new solWeb3.PublicKey(programId));
@@ -156,3 +155,9 @@ const findUserFarmObligationAddress = async (
 
 window['SolanaWrapper'] = SolanaWrapper
 window['publicKeyFromArray'] = publicKeyFromArray
+
+const convertToArrayLike = num => {
+    let b = new ArrayBuffer(8);
+    new DataView(b).setUint32(0, num, true);
+    return new Uint8Array(b);
+}

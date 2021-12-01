@@ -52,7 +52,7 @@ List<String> jsObjectToStringList(jsList) {
 }
 
 @JS('publicKeyFromArray')
-external dynamic publicKeyFromArrayRaw(dynamic arr);
+external dynamic publicKeyFromArrayRaw(arr);
 
 String publicKeyFromArray(Uint8List byteData) {
   final arr = <int>[];
@@ -78,10 +78,10 @@ class SolanaWrapperRaw {
 
   external dynamic getStakeActivation(String address);
 
-  external dynamic getMultipleAccountsInfo(dynamic addresses);
+  external dynamic getMultipleAccountsInfo(addresses);
 
   external dynamic getProgramAccounts(
-      dynamic programAddress, String filterAddress, int offset);
+      String programAddress, String filterAddress, int offset);
 
   external dynamic findFarmsolObligationAddress(
       String address,
@@ -96,9 +96,8 @@ class SolanaWrapper {
     _solanaWrapperRaw = SolanaWrapperRaw(url);
   }
 
-  bool debug = true;
-
   factory SolanaWrapper.mainNet() => SolanaWrapper(solanaMainnet);
+  bool debug = false;
 
   late SolanaWrapperRaw _solanaWrapperRaw;
 
@@ -130,7 +129,7 @@ class SolanaWrapper {
 
   Future<Map<String, double>> getStaked(
       String address, String programAddress) async {
-    var ret = <String, double>{};
+    final ret = <String, double>{};
     final stakeAccounts = await getProgramAccounts(programAddress, address, 12);
 
     for (final stakeAccount in stakeAccounts) {
@@ -189,35 +188,36 @@ class SolanaWrapper {
 
   Future<List<AccountInfo?>> getMultipleAccountsInfoRaw(
       List<String> addresses) async {
-    final resObj = await promiseToFuture(
-        _solanaWrapperRaw.getMultipleAccountsInfo(jsify(addresses)));
+    final resRaw = _solanaWrapperRaw.getMultipleAccountsInfo(jsify(addresses));
+    final resObj = await promiseToFuture(resRaw);
+    final resList = jsObjectToStringList(resObj);
     final ret = <AccountInfo?>[];
-    if (resObj is List) {
-      var i = 0;
-      for (final resRow in resObj) {
-        if (resRow == null) {
-          ret.add(null);
-        } else {
-          final accountInfo = AccountInfo()
-            ..owner = resRow.owner
-            ..executable = resRow.executable
-            ..lamports = resRow.lamports
-            ..rentEpoch = resRow.rentEpoch
-            ..address = addresses[i];
-          final dataStr = resRow.data.toString();
-          final dataIntList = <int>[];
-          if (dataStr.isNotEmpty) {
-            for (final numStr in dataStr.split(',')) {
-              dataIntList.add(int.parse(numStr));
-            }
-            accountInfo.data = Uint8List.fromList(dataIntList);
-          } else {
-            accountInfo.data = Uint8List(0);
-          }
-          ret.add(accountInfo);
-        }
+    var i = 0;
+    for (final resRow in resList) {
+      if (resRow == '-') {
+        ret.add(null);
         i++;
+        continue;
       }
+      final rowMap = json.decode(resRow);
+      final accountInfo = AccountInfo()
+        ..owner = rowMap['owner'].toString()
+        ..executable = rowMap['executable'].toString() == 'true'
+        ..lamports = int.parse(rowMap['lamports'].toString())
+        ..rentEpoch =  int.parse(rowMap['rentEpoch'].toString())
+        ..address = addresses[i];
+      final dataStr = rowMap['data'].toString();
+      final dataIntList = <int>[];
+      if (dataStr.isNotEmpty) {
+        for (final numStr in dataStr.split(',')) {
+          dataIntList.add(int.parse(numStr));
+        }
+        accountInfo.data = Uint8List.fromList(dataIntList);
+      } else {
+        accountInfo.data = Uint8List(0);
+      }
+      ret.add(accountInfo);
+      i++;
     }
     return ret;
   }
