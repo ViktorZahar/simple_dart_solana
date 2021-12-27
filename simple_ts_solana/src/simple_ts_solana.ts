@@ -48,7 +48,7 @@ export class SolanaWrapper {
     }
 
     async getProgramAccounts(programAddress: string, filterAddress = '', offset = 0): Promise<any> {
-        var ret: AccountInfo[] = [];
+        var ret: string[] = [];
         const filters = []
         if (filterAddress != '') {
             filters.push({ memcmp: { offset: offset, bytes: filterAddress } })
@@ -66,13 +66,13 @@ export class SolanaWrapper {
             accountInfo.owner = owner.toString()
             accountInfo.rentEpoch = rentEpoch
             accountInfo.address = res[i].pubkey.toString()
-            ret.push(accountInfo)
+            ret.push(JSON.stringify(accountInfo))
         }
         return ret
     }
 
-    async getStakeActivation(address: string): Promise<solWeb3.StakeActivationData> {
-        return await this.conn.getStakeActivation(new solWeb3.PublicKey(address))
+    async getStakeActivation(address: string): Promise<string> {
+        return JSON.stringify(await this.conn.getStakeActivation(new solWeb3.PublicKey(address)))
     }
 
     async getMultipleAccountsInfo(addresses: string[]): Promise<any> {

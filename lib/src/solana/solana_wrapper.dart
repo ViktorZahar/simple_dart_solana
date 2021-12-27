@@ -148,13 +148,14 @@ class SolanaWrapper {
     final ret = <AccountInfo>[];
     if (resObj is List) {
       for (final resRow in resObj) {
+        final rowMap = json.decode(resRow);
         final accountInfo = AccountInfo()
-          ..owner = resRow.owner
-          ..executable = resRow.executable
-          ..lamports = resRow.lamports
-          ..rentEpoch = resRow.rentEpoch
-          ..address = resRow.address;
-        final dataStr = resRow.data.toString();
+          ..owner = rowMap['owner'].toString()
+          ..executable = rowMap['executable'].toString() == 'true'
+          ..lamports = int.parse(rowMap['lamports'].toString())
+          ..rentEpoch = int.parse(rowMap['rentEpoch'].toString())
+          ..address = rowMap['address'].toString();
+        final dataStr = rowMap['data'].toString();
         final dataIntList = <int>[];
         if (dataStr.isNotEmpty) {
           for (final numStr in dataStr.split(',')) {
@@ -173,10 +174,11 @@ class SolanaWrapper {
   Future<StakeActivationData> getStakeActivation(String address) async {
     final resObj =
         await promiseToFuture(_solanaWrapperRaw.getStakeActivation(address));
+    final resMap = json.decode(resObj);
     final ret = StakeActivationData()
-      ..active = resObj.active
-      ..inactive = resObj.inactive
-      ..state = resObj.state;
+      ..active = resMap['active']
+      ..inactive = resMap['inactive']
+      ..state = resMap['state'];
     return ret;
   }
 
