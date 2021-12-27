@@ -82,7 +82,7 @@ export class SolanaWrapper {
             const key = new solWeb3.PublicKey(addresses[i])
             keys.push(key)
         }
-        const multiInfoRes = await this.conn.getMultipleAccountsInfo(keys, 'confirmed')
+        const multiInfoRes = await this.conn.getMultipleAccountsInfo(keys, 'finalized')
         for (var i in multiInfoRes) {
             if (multiInfoRes[i] == null) {
                 ret.push('-')

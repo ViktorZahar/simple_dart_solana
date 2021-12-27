@@ -9,6 +9,8 @@ import 'package:js/js.dart';
 
 const solanaMainnet = 'https://api.mainnet-beta.solana.com';
 
+const batchSize = 100;
+
 @JS('JSON.stringify')
 // ignore: avoid_annotating_with_dynamic
 external String stringify(dynamic obj);
@@ -204,7 +206,7 @@ class SolanaWrapper {
         ..owner = rowMap['owner'].toString()
         ..executable = rowMap['executable'].toString() == 'true'
         ..lamports = int.parse(rowMap['lamports'].toString())
-        ..rentEpoch =  int.parse(rowMap['rentEpoch'].toString())
+        ..rentEpoch = int.parse(rowMap['rentEpoch'].toString())
         ..address = addresses[i];
       final dataStr = rowMap['data'].toString();
       final dataIntList = <int>[];
@@ -222,34 +224,23 @@ class SolanaWrapper {
     return ret;
   }
 
-  Future<List<AccountInfo?>> getMultipleAccountsInfo(List<String> addresses,
-      {batchSize = 100, maxThreads = 8}) async {
-    if (addresses.isEmpty) {
+  Future<List<AccountInfo?>> getMultipleAccountsInfo(List<String> addressList) async {
+    if (addressList.isEmpty) {
       return <AccountInfo?>[];
     }
+    final addressListDist = addressList.toSet().toList();
+
     final callResult = <AccountInfo?>[];
     try {
-      final chunks = groupByBatch(addresses, batchSize, 1);
+      final chunks = groupByBatch(addressListDist, batchSize, 1);
       for (final chunk in chunks) {
-        // final futureList = <Future<List<AccountInfo>>>[];
-        // for (final batch in chunk) {
-        //   Future<List<AccountInfo>> fut =
-        //       promiseToFuture(getMultipleAccountsInfoRaw(batch));
-        //   futureList.add(fut);
-        // }
-        // final chunkResult = await Future.wait(futureList);
-        // if (chunkResult is List) {
-        //   for (final chunkResultRow in chunkResult) {
-        //     callResult.addAll(chunkResultRow);
-        //   }
-        // }
         final chunkResult = await getMultipleAccountsInfoRaw(chunk[0]);
         callResult.addAll(chunkResult);
       }
     } catch (e) {
       print(e.toString());
       if (debug) {
-        for (final address in addresses) {
+        for (final address in addressListDist) {
           try {
             await promiseToFuture(getMultipleAccountsInfoRaw([address]));
           } catch (e) {
@@ -263,21 +254,31 @@ class SolanaWrapper {
           'execution getMultipleAccountsInfo error (solana): ${e.toString()}');
     }
     if (callResult is List) {
-      return callResult;
+      final calcResultMap = <String, AccountInfo?>{};
+      var i = 0;
+      for (final address in addressListDist) {
+        calcResultMap[address] = callResult[i];
+        i++;
+      }
+      final result = <AccountInfo?>[];
+      for (final address in addressList) {
+        final addressResult = calcResultMap[address];
+        result.add(addressResult);
+      }
+      return result;
     } else {
       throw Exception('Unknown multicall result type');
     }
   }
 
   Future<List<List<AccountInfo?>>> getMultipleAccountsInfo2(
-      List<List<String>> callsList,
-      {batchSize = 100}) async {
+      List<List<String>> callsList) async {
     final addresses = <String>[];
     for (final list in callsList) {
       addresses.addAll(list);
     }
     final result0 =
-        await getMultipleAccountsInfo(addresses, batchSize: batchSize);
+        await getMultipleAccountsInfo(addresses);
     final res = <List<AccountInfo?>>[];
     var callNum = 0;
     for (final list in callsList) {
@@ -292,8 +293,7 @@ class SolanaWrapper {
   }
 
   Future<List<List<List<AccountInfo?>>>> getMultipleAccountsInfo3(
-      List<List<List<String>>> callsList,
-      {batchSize = 100}) async {
+      List<List<List<String>>> callsList) async {
     final addresses = <String>[];
     for (final list0 in callsList) {
       for (final list1 in list0) {
@@ -301,7 +301,7 @@ class SolanaWrapper {
       }
     }
     final result0 =
-        await getMultipleAccountsInfo(addresses, batchSize: batchSize);
+        await getMultipleAccountsInfo(addresses);
     final res = <List<List<AccountInfo?>>>[];
     var callNum = 0;
     for (final list0 in callsList) {
